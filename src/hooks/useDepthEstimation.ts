@@ -43,6 +43,9 @@ export function useDepthEstimation() {
                 setProgress(Math.round((p.loaded / p.total) * 50));
               }
             },
+            session_options: {
+              logSeverityLevel: 3, // Suppress ONNX Runtime info/warnings (0=verbose,1=info,2=warning,3=error,4=fatal)
+            },
           }
         );
       }
@@ -114,6 +117,9 @@ export function useDepthEstimation() {
                 if (p.status === "progress" && p.total) {
                   setProgress(Math.round((p.loaded / p.total) * 50));
                 }
+              },
+              session_options: {
+                logSeverityLevel: 3,
               },
             }
           );
