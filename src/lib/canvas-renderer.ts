@@ -243,12 +243,37 @@ export function renderPreview({
   );
 }
 
+function drawWatermark(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  siteName: string
+) {
+  const fontSize = Math.max(14, Math.round(w * 0.018));
+  const padding = Math.round(fontSize * 0.8);
+
+  ctx.save();
+  ctx.font = `600 ${fontSize}px "Inter", "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+  ctx.globalAlpha = 0.6;
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = fontSize * 0.3;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 1;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(siteName, w - padding, h - padding);
+  ctx.restore();
+}
+
 export function exportAsPNG(
   originalImage: HTMLImageElement,
   textParams: TextOverlayParams,
   depthMap: Float32Array | null,
   depthWidth: number,
-  depthHeight: number
+  depthHeight: number,
+  withWatermark = false,
+  siteName = "BehindTheText"
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const offscreen = document.createElement("canvas");
@@ -264,6 +289,10 @@ export function exportAsPNG(
       depthMap, depthWidth, depthHeight,
       renderScale, false
     );
+
+    if (withWatermark) {
+      drawWatermark(ctx, offscreen.width, offscreen.height, siteName);
+    }
 
     offscreen.toBlob(
       (blob) => {

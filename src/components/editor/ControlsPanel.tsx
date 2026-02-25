@@ -15,11 +15,12 @@ interface ControlsPanelProps {
     value: TextOverlayParams[K]
   ) => void;
   reset: () => void;
-  onExport: () => Promise<void>;
+  onExport: (withWatermark: boolean) => Promise<void>;
   isExporting: boolean;
   hasImage: boolean;
   hasDepth: boolean;
   onNewImage: () => void;
+  previewCanvas: HTMLCanvasElement | null;
 }
 
 function S({
@@ -68,6 +69,7 @@ export function ControlsPanel({
   hasImage,
   hasDepth,
   onNewImage,
+  previewCanvas,
 }: ControlsPanelProps) {
   const disabled = !hasImage || !hasDepth;
 
@@ -132,7 +134,7 @@ export function ControlsPanel({
       <S label="Spacing" value={textParams.letterSpacing} min={-20} max={50} onChange={(v) => setField("letterSpacing", v)} suffix="px" />
 
       <div className="space-y-3 pt-2">
-        <ExportButton onExport={onExport} disabled={disabled} isExporting={isExporting} />
+        <ExportButton onExport={onExport} disabled={disabled} isExporting={isExporting} previewCanvas={previewCanvas} />
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" className="h-12 text-base" onClick={reset}>Reset</Button>
           <Button variant="outline" className="h-12 text-base" onClick={onNewImage}>New Image</Button>

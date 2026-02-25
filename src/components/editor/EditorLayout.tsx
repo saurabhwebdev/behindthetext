@@ -83,11 +83,11 @@ export function EditorLayout() {
   }, [originalImageUrl, clearDepth]);
 
   // Handle export with metadata save
-  const onExport = useCallback(async () => {
+  const onExport = useCallback(async (withWatermark: boolean) => {
     if (!originalImage || !originalFile) return;
     setIsExporting(true);
     try {
-      await handleExport();
+      await handleExport(withWatermark);
 
       const dpiScale = Math.min(window.devicePixelRatio, 3);
       saveCreationMetadata({
@@ -136,6 +136,7 @@ export function EditorLayout() {
             hasImage={!!originalImage}
             hasDepth={!!depthMap}
             onNewImage={onNewImage}
+            previewCanvas={canvasRef.current}
           />
         </div>
       </div>

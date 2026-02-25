@@ -78,8 +78,8 @@ export function useCanvasRenderer(
     return () => observer.disconnect();
   }, [canvasRef, containerRef, originalImage, textParams, depthMap, depthWidth, depthHeight]);
 
-  // Export function
-  const handleExport = useCallback(async () => {
+  // Export function — accepts withWatermark flag
+  const handleExport = useCallback(async (withWatermark = false) => {
     if (!originalImage) return null;
 
     const blob = await exportAsPNG(
@@ -87,7 +87,8 @@ export function useCanvasRenderer(
       textParams,
       depthMap,
       depthWidth,
-      depthHeight
+      depthHeight,
+      withWatermark
     );
 
     const url = URL.createObjectURL(blob);
