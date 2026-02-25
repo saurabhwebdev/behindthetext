@@ -1,5 +1,6 @@
 import { TextOverlayParams } from "@/types/editor";
 import { MAX_DPI_SCALE } from "./constants";
+import { refineDepthMap, createEdgeAdaptiveDepthMask } from "./depth-refine";
 
 export interface RenderParams {
   canvas: HTMLCanvasElement;
@@ -85,91 +86,12 @@ function drawText(
 }
 
 const REFERENCE_WIDTH = 1000;
-const SOFTNESS = 0.06; // transition zone width in normalized depth (0-1)
 
-/**
- * Bilinear sample from a single-channel Float32Array depth map.
- * Gives smooth sub-pixel interpolation when mapping canvas pixels to depth pixels.
- */
-function sampleDepthBilinear(
-  depthMap: Float32Array,
-  dw: number,
-  dh: number,
-  fx: number,
-  fy: number
-): number {
-  const x0 = Math.floor(fx);
-  const y0 = Math.floor(fy);
-  const x1 = Math.min(x0 + 1, dw - 1);
-  const y1 = Math.min(y0 + 1, dh - 1);
-  const dx = fx - x0;
-  const dy = fy - y0;
-
-  const tl = depthMap[y0 * dw + x0];
-  const tr = depthMap[y0 * dw + x1];
-  const bl = depthMap[y1 * dw + x0];
-  const br = depthMap[y1 * dw + x1];
-
-  const top = tl + (tr - tl) * dx;
-  const bot = bl + (br - bl) * dx;
-  return top + (bot - top) * dy;
-}
-
-/**
- * Creates an RGBA mask from the depth map at the given canvas dimensions.
- * Uses bilinear sampling for smooth edges and a soft sigmoid-like transition.
- */
-function createDepthMask(
-  depthMap: Float32Array,
-  depthW: number,
-  depthH: number,
-  canvasW: number,
-  canvasH: number,
-  threshold: number // 0-255
-): ImageData {
-  const mask = new ImageData(canvasW, canvasH);
-  const data = mask.data;
-  const t = threshold / 255;
-  const halfSoft = SOFTNESS / 2;
-
-  const scaleX = (depthW - 1) / (canvasW - 1 || 1);
-  const scaleY = (depthH - 1) / (canvasH - 1 || 1);
-
-  for (let y = 0; y < canvasH; y++) {
-    const srcY = y * scaleY;
-    const rowOff = y * canvasW;
-    for (let x = 0; x < canvasW; x++) {
-      const srcX = x * scaleX;
-      const depthVal = sampleDepthBilinear(depthMap, depthW, depthH, srcX, srcY);
-
-      let alpha: number;
-      if (depthVal >= t + halfSoft) {
-        alpha = 255;
-      } else if (depthVal <= t - halfSoft) {
-        alpha = 0;
-      } else {
-        // Smooth hermite interpolation (smoothstep) for clean edges
-        const edge = (depthVal - (t - halfSoft)) / SOFTNESS;
-        const smooth = edge * edge * (3 - 2 * edge);
-        alpha = Math.round(255 * smooth);
-      }
-
-      const idx = (rowOff + x) * 4;
-      data[idx] = 255;
-      data[idx + 1] = 255;
-      data[idx + 2] = 255;
-      data[idx + 3] = alpha;
-    }
-  }
-
-  return mask;
-}
-
-// Reusable offscreen canvases to avoid GC pressure during real-time slider dragging
+// Reusable offscreen canvases for preview (avoid GC during slider drag)
 let _maskCanvas: HTMLCanvasElement | null = null;
 let _fgCanvas: HTMLCanvasElement | null = null;
 
-function getTempCanvas(
+function getTemp(
   which: "mask" | "fg",
   w: number,
   h: number
@@ -189,6 +111,79 @@ function getTempCanvas(
   return [_fgCanvas, ctx];
 }
 
+function compositeWithDepth(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  originalImage: HTMLImageElement,
+  textParams: TextOverlayParams,
+  depthMap: Float32Array,
+  depthW: number,
+  depthH: number,
+  renderScale: number,
+  useCache: boolean
+) {
+  // Refine depth map using original image as edge guide (cached internally)
+  const refined = refineDepthMap(
+    originalImage,
+    depthMap,
+    depthW,
+    depthH,
+    w,
+    h
+  );
+
+  // Create edge-adaptive depth mask
+  const depthMask = createEdgeAdaptiveDepthMask(
+    refined.depth,
+    refined.edges,
+    w,
+    h,
+    textParams.depthThreshold
+  );
+
+  // 1. Original image as base
+  ctx.drawImage(originalImage, 0, 0, w, h);
+
+  // 2. Text on top
+  drawText(ctx, textParams, w, h, renderScale);
+
+  // 3. Build foreground overlay from depth mask
+  let maskCanvas: HTMLCanvasElement;
+  let maskCtx: CanvasRenderingContext2D;
+  let fgCanvas: HTMLCanvasElement;
+  let fgCtx: CanvasRenderingContext2D;
+
+  if (useCache) {
+    [maskCanvas, maskCtx] = getTemp("mask", w, h);
+    [fgCanvas, fgCtx] = getTemp("fg", w, h);
+  } else {
+    maskCanvas = document.createElement("canvas");
+    maskCanvas.width = w;
+    maskCanvas.height = h;
+    maskCtx = maskCanvas.getContext("2d", { alpha: true })!;
+    fgCanvas = document.createElement("canvas");
+    fgCanvas.width = w;
+    fgCanvas.height = h;
+    fgCtx = fgCanvas.getContext("2d", { alpha: true })!;
+    fgCtx.imageSmoothingEnabled = true;
+    fgCtx.imageSmoothingQuality = "high";
+  }
+
+  maskCtx.clearRect(0, 0, w, h);
+  maskCtx.putImageData(depthMask, 0, 0);
+
+  fgCtx.globalCompositeOperation = "source-over";
+  fgCtx.clearRect(0, 0, w, h);
+  fgCtx.drawImage(originalImage, 0, 0, w, h);
+  fgCtx.globalCompositeOperation = "destination-in";
+  fgCtx.drawImage(maskCanvas, 0, 0);
+  fgCtx.globalCompositeOperation = "source-over";
+
+  // 4. Foreground overlay covers text where objects are closer
+  ctx.drawImage(fgCanvas, 0, 0);
+}
+
 function compositeToCanvas(
   ctx: CanvasRenderingContext2D,
   w: number,
@@ -198,40 +193,18 @@ function compositeToCanvas(
   depthMap: Float32Array | null,
   depthW: number,
   depthH: number,
-  renderScale: number
+  renderScale: number,
+  useCache: boolean
 ) {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.clearRect(0, 0, w, h);
 
   if (depthMap && depthW > 0 && depthH > 0) {
-    // 1. Original image as base
-    ctx.drawImage(originalImage, 0, 0, w, h);
-
-    // 2. Draw text on top
-    drawText(ctx, textParams, w, h, renderScale);
-
-    // 3. Build depth-masked foreground overlay
-    const depthMask = createDepthMask(
-      depthMap, depthW, depthH, w, h, textParams.depthThreshold
+    compositeWithDepth(
+      ctx, w, h, originalImage, textParams,
+      depthMap, depthW, depthH, renderScale, useCache
     );
-
-    const [maskCanvas, maskCtx] = getTempCanvas("mask", w, h);
-    maskCtx.clearRect(0, 0, w, h);
-    maskCtx.putImageData(depthMask, 0, 0);
-
-    const [fgCanvas, fgCtx] = getTempCanvas("fg", w, h);
-    fgCtx.globalCompositeOperation = "source-over";
-    fgCtx.clearRect(0, 0, w, h);
-    fgCtx.drawImage(originalImage, 0, 0, w, h);
-
-    // Mask the original image with the depth mask
-    fgCtx.globalCompositeOperation = "destination-in";
-    fgCtx.drawImage(maskCanvas, 0, 0);
-    fgCtx.globalCompositeOperation = "source-over";
-
-    // 4. Draw depth-masked foreground on top — covers text where objects are closer
-    ctx.drawImage(fgCanvas, 0, 0);
   } else {
     ctx.drawImage(originalImage, 0, 0, w, h);
     drawText(ctx, textParams, w, h, renderScale);
@@ -266,7 +239,7 @@ export function renderPreview({
     ctx, canvas.width, canvas.height,
     originalImage, textParams,
     depthMap, depthWidth, depthHeight,
-    renderScale
+    renderScale, true
   );
 }
 
@@ -285,44 +258,12 @@ export function exportAsPNG(
     const ctx = offscreen.getContext("2d", { alpha: true })!;
     const renderScale = offscreen.width / REFERENCE_WIDTH;
 
-    // For export, create fresh canvases (not the cached preview ones)
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.clearRect(0, 0, offscreen.width, offscreen.height);
-
-    const w = offscreen.width;
-    const h = offscreen.height;
-
-    if (depthMap && depthWidth > 0 && depthHeight > 0) {
-      ctx.drawImage(originalImage, 0, 0, w, h);
-      drawText(ctx, textParams, w, h, renderScale);
-
-      const depthMask = createDepthMask(
-        depthMap, depthWidth, depthHeight, w, h, textParams.depthThreshold
-      );
-
-      const maskCanvas = document.createElement("canvas");
-      maskCanvas.width = w;
-      maskCanvas.height = h;
-      const maskCtx = maskCanvas.getContext("2d", { alpha: true })!;
-      maskCtx.putImageData(depthMask, 0, 0);
-
-      const fgCanvas = document.createElement("canvas");
-      fgCanvas.width = w;
-      fgCanvas.height = h;
-      const fgCtx = fgCanvas.getContext("2d", { alpha: true })!;
-      fgCtx.imageSmoothingEnabled = true;
-      fgCtx.imageSmoothingQuality = "high";
-      fgCtx.drawImage(originalImage, 0, 0, w, h);
-      fgCtx.globalCompositeOperation = "destination-in";
-      fgCtx.drawImage(maskCanvas, 0, 0);
-      fgCtx.globalCompositeOperation = "source-over";
-
-      ctx.drawImage(fgCanvas, 0, 0);
-    } else {
-      ctx.drawImage(originalImage, 0, 0, w, h);
-      drawText(ctx, textParams, w, h, renderScale);
-    }
+    compositeToCanvas(
+      ctx, offscreen.width, offscreen.height,
+      originalImage, textParams,
+      depthMap, depthWidth, depthHeight,
+      renderScale, false
+    );
 
     offscreen.toBlob(
       (blob) => {

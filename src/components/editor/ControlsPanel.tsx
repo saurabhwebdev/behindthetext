@@ -24,7 +24,7 @@ interface ControlsPanelProps {
   onNewImage: () => void;
 }
 
-function CollapsibleSection({
+function Section({
   title,
   defaultOpen = false,
   children,
@@ -51,7 +51,7 @@ function CollapsibleSection({
   );
 }
 
-function SliderField({
+function SliderRow({
   label,
   value,
   min,
@@ -88,7 +88,7 @@ function SliderField({
   );
 }
 
-function ColorField({
+function ColorPick({
   label,
   value,
   onChange,
@@ -99,7 +99,7 @@ function ColorField({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Label className="min-w-14 text-[11px]">{label}</Label>
+      <Label className="min-w-12 text-[11px]">{label}</Label>
       <input
         type="color"
         value={value}
@@ -115,7 +115,7 @@ function ColorField({
   );
 }
 
-function ToggleField({
+function Toggle({
   label,
   checked,
   onChange,
@@ -162,7 +162,7 @@ export function ControlsPanel({
     <div
       className={`space-y-2 ${disabled ? "pointer-events-none opacity-40" : ""}`}
     >
-      {/* Text input — always visible */}
+      {/* ── Text ── */}
       <Input
         value={textParams.text}
         onChange={(e) => setField("text", e.target.value)}
@@ -170,162 +170,86 @@ export function ControlsPanel({
         className="h-9 font-medium"
       />
 
-      {/* Depth */}
-      <CollapsibleSection title="Depth" defaultOpen>
-        <SliderField
-          label="Text Depth"
-          value={Math.round((textParams.depthThreshold / 255) * 100)}
-          min={0}
-          max={100}
-          onChange={(v) => setField("depthThreshold", Math.round((v / 100) * 255))}
-          suffix="%"
-        />
-        <p className="text-[10px] text-muted-foreground">
-          Move left to push text further back, right to bring it forward
-        </p>
-      </CollapsibleSection>
-
-      {/* Typography */}
-      <CollapsibleSection title="Typography" defaultOpen>
-        <div className="flex gap-2">
-          <select
-            value={textParams.fontFamily}
-            onChange={(e) => setField("fontFamily", e.target.value)}
-            className="h-8 flex-1 rounded-md border border-input bg-transparent px-2 text-xs outline-none"
-          >
-            {CURATED_FONTS.map((font) => (
-              <option key={font.family} value={font.family}>
-                {font.label}
-              </option>
-            ))}
-          </select>
-          <div className="flex gap-0.5">
-            {[
-              { label: "R", value: 400 },
-              { label: "B", value: 700 },
-              { label: "X", value: 900 },
-            ].map((w) => (
-              <Button
-                key={w.value}
-                variant={textParams.fontWeight === w.value ? "default" : "outline"}
-                size="sm"
-                className="h-8 w-8 p-0 text-[11px]"
-                onClick={() => setField("fontWeight", w.value)}
-              >
-                {w.label}
-              </Button>
-            ))}
-          </div>
+      {/* ── Font + Size (compact row) ── */}
+      <div className="flex gap-2">
+        <select
+          value={textParams.fontFamily}
+          onChange={(e) => setField("fontFamily", e.target.value)}
+          className="h-8 flex-1 rounded-md border border-input bg-transparent px-2 text-xs outline-none"
+        >
+          {CURATED_FONTS.map((font) => (
+            <option key={font.family} value={font.family}>
+              {font.label}
+            </option>
+          ))}
+        </select>
+        <div className="flex gap-0.5">
+          {[
+            { label: "R", value: 400 },
+            { label: "B", value: 700 },
+            { label: "X", value: 900 },
+          ].map((w) => (
+            <Button
+              key={w.value}
+              variant={textParams.fontWeight === w.value ? "default" : "outline"}
+              size="sm"
+              className="h-8 w-8 p-0 text-[11px]"
+              onClick={() => setField("fontWeight", w.value)}
+            >
+              {w.label}
+            </Button>
+          ))}
         </div>
-        <SliderField
-          label="Size"
-          value={textParams.fontSize}
-          min={10}
-          max={500}
-          onChange={(v) => setField("fontSize", v)}
-          suffix="px"
-        />
-        <SliderField
-          label="Spacing"
-          value={textParams.letterSpacing}
-          min={-20}
-          max={50}
-          onChange={(v) => setField("letterSpacing", v)}
-          suffix="px"
-        />
-      </CollapsibleSection>
+      </div>
 
-      {/* Color */}
-      <CollapsibleSection title="Color">
-        <ColorField
+      <SliderRow
+        label="Size"
+        value={textParams.fontSize}
+        min={10}
+        max={500}
+        onChange={(v) => setField("fontSize", v)}
+        suffix="px"
+      />
+
+      {/* ── Depth ── */}
+      <SliderRow
+        label="Depth"
+        value={Math.round((textParams.depthThreshold / 255) * 100)}
+        min={0}
+        max={100}
+        onChange={(v) => setField("depthThreshold", Math.round((v / 100) * 255))}
+        suffix="%"
+      />
+
+      {/* ── Style (color + effects combined) ── */}
+      <Section title="Style">
+        <ColorPick
           label="Color"
           value={textParams.color}
           onChange={(v) => setField("color", v)}
         />
-        <ToggleField
+
+        <Toggle
           label="Gradient"
           checked={textParams.useGradient}
           onChange={(v) => setField("useGradient", v)}
         />
         {textParams.useGradient && (
           <div className="ml-2 space-y-1.5 border-l-2 border-border pl-2">
-            <ColorField
+            <ColorPick
               label="Start"
               value={textParams.gradientStartColor}
               onChange={(v) => setField("gradientStartColor", v)}
             />
-            <ColorField
+            <ColorPick
               label="End"
               value={textParams.gradientEndColor}
               onChange={(v) => setField("gradientEndColor", v)}
             />
           </div>
         )}
-      </CollapsibleSection>
 
-      {/* Position & Transform */}
-      <CollapsibleSection title="Position">
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-          <SliderField
-            label="X"
-            value={textParams.positionX}
-            min={0}
-            max={100}
-            onChange={(v) => setField("positionX", v)}
-            suffix="%"
-          />
-          <SliderField
-            label="Y"
-            value={textParams.positionY}
-            min={0}
-            max={100}
-            onChange={(v) => setField("positionY", v)}
-            suffix="%"
-          />
-          <SliderField
-            label="Rotate"
-            value={textParams.rotation}
-            min={-180}
-            max={180}
-            onChange={(v) => setField("rotation", v)}
-            suffix="°"
-          />
-          <SliderField
-            label="Tilt X"
-            value={textParams.skewX}
-            min={-45}
-            max={45}
-            onChange={(v) => setField("skewX", v)}
-            suffix="°"
-          />
-          <SliderField
-            label="Tilt Y"
-            value={textParams.skewY}
-            min={-45}
-            max={45}
-            onChange={(v) => setField("skewY", v)}
-            suffix="°"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-[11px]"
-            onClick={() => {
-              setField("positionX", 50);
-              setField("positionY", 50);
-              setField("rotation", 0);
-              setField("skewX", 0);
-              setField("skewY", 0);
-            }}
-          >
-            Reset
-          </Button>
-        </div>
-      </CollapsibleSection>
-
-      {/* Effects */}
-      <CollapsibleSection title="Effects">
-        <SliderField
+        <SliderRow
           label="Opacity"
           value={Math.round(textParams.opacity * 100)}
           min={0}
@@ -333,56 +257,42 @@ export function ControlsPanel({
           onChange={(v) => setField("opacity", v / 100)}
           suffix="%"
         />
-        <ToggleField
+
+        <Toggle
           label="Shadow"
           checked={textParams.shadowEnabled}
           onChange={(v) => setField("shadowEnabled", v)}
         />
         {textParams.shadowEnabled && (
           <div className="ml-2 space-y-1.5 border-l-2 border-border pl-2">
-            <ColorField
+            <ColorPick
               label="Color"
               value={textParams.shadowColor}
               onChange={(v) => setField("shadowColor", v)}
             />
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-              <SliderField
-                label="Blur"
-                value={textParams.shadowBlur}
-                min={0}
-                max={50}
-                onChange={(v) => setField("shadowBlur", v)}
-              />
-              <SliderField
-                label="X"
-                value={textParams.shadowOffsetX}
-                min={-50}
-                max={50}
-                onChange={(v) => setField("shadowOffsetX", v)}
-              />
-              <SliderField
-                label="Y"
-                value={textParams.shadowOffsetY}
-                min={-50}
-                max={50}
-                onChange={(v) => setField("shadowOffsetY", v)}
-              />
-            </div>
+            <SliderRow
+              label="Blur"
+              value={textParams.shadowBlur}
+              min={0}
+              max={50}
+              onChange={(v) => setField("shadowBlur", v)}
+            />
           </div>
         )}
-        <ToggleField
+
+        <Toggle
           label="Stroke"
           checked={textParams.strokeEnabled}
           onChange={(v) => setField("strokeEnabled", v)}
         />
         {textParams.strokeEnabled && (
           <div className="ml-2 space-y-1.5 border-l-2 border-border pl-2">
-            <ColorField
+            <ColorPick
               label="Color"
               value={textParams.strokeColor}
               onChange={(v) => setField("strokeColor", v)}
             />
-            <SliderField
+            <SliderRow
               label="Width"
               value={textParams.strokeWidth}
               min={0}
@@ -392,9 +302,63 @@ export function ControlsPanel({
             />
           </div>
         )}
-      </CollapsibleSection>
+      </Section>
 
-      {/* Actions — always visible */}
+      {/* ── Position (advanced, collapsed by default) ── */}
+      <Section title="Position">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+          <SliderRow
+            label="X"
+            value={textParams.positionX}
+            min={0}
+            max={100}
+            onChange={(v) => setField("positionX", v)}
+            suffix="%"
+          />
+          <SliderRow
+            label="Y"
+            value={textParams.positionY}
+            min={0}
+            max={100}
+            onChange={(v) => setField("positionY", v)}
+            suffix="%"
+          />
+          <SliderRow
+            label="Rotate"
+            value={textParams.rotation}
+            min={-180}
+            max={180}
+            onChange={(v) => setField("rotation", v)}
+            suffix="°"
+          />
+          <SliderRow
+            label="Spacing"
+            value={textParams.letterSpacing}
+            min={-20}
+            max={50}
+            onChange={(v) => setField("letterSpacing", v)}
+            suffix="px"
+          />
+          <SliderRow
+            label="Tilt X"
+            value={textParams.skewX}
+            min={-45}
+            max={45}
+            onChange={(v) => setField("skewX", v)}
+            suffix="°"
+          />
+          <SliderRow
+            label="Tilt Y"
+            value={textParams.skewY}
+            min={-45}
+            max={45}
+            onChange={(v) => setField("skewY", v)}
+            suffix="°"
+          />
+        </div>
+      </Section>
+
+      {/* ── Actions ── */}
       <div className="space-y-2 pt-1">
         <ExportButton
           onExport={onExport}
