@@ -43,7 +43,7 @@ function S({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-base font-medium">{label}</Label>
+        <Label className="font-[family-name:var(--font-extenda-light)] text-base">{label}</Label>
         <span className="text-base tabular-nums text-muted-foreground">
           {value}{suffix}
         </span>
@@ -113,7 +113,7 @@ export function ControlsPanel({
       <S label="Depth" value={Math.round((textParams.depthThreshold / 255) * 100)} min={0} max={100} onChange={(v) => setField("depthThreshold", Math.round((v / 100) * 255))} suffix="%" />
 
       <div className="flex items-center gap-3">
-        <Label className="text-base font-medium">Color</Label>
+        <Label className="font-[family-name:var(--font-extenda-light)] text-base">Color</Label>
         <input
           type="color"
           value={textParams.color}

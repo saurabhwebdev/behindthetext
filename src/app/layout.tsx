@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
@@ -14,6 +15,18 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const extendaBold = localFont({
+  src: "../../public/fonts/Extenda-80-Peta-trial.ttf",
+  variable: "--font-extenda-bold",
+  display: "swap",
+});
+
+const extendaLight = localFont({
+  src: "../../public/fonts/Extenda-40-Hecto-trial.ttf",
+  variable: "--font-extenda-light",
+  display: "swap",
 });
 
 const SITE_URL = "https://behindthetext.site";
@@ -110,7 +123,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${extendaBold.variable} ${extendaLight.variable} antialiased`}
       >
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
