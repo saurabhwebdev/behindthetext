@@ -41,11 +41,37 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-foreground">
+            Cookies We Use
+          </h2>
+          <p className="mt-2">
+            We use the following cookies, only after you provide consent via
+            the cookie banner:
+          </p>
+          <ul className="mt-2 list-inside list-disc space-y-1">
+            <li>
+              <strong>btt_consent</strong> — stores your cookie consent choice
+              (&quot;yes&quot; or &quot;no&quot;). Expires after 1 year.
+            </li>
+            <li>
+              <strong>btt_session</strong> — a random session identifier used
+              to group your usage activity. Not tied to your identity. Expires
+              after 1 year.
+            </li>
+          </ul>
+          <p className="mt-2">
+            No tracking cookies from third parties are used. You can decline
+            cookies via the consent banner, and no analytics data will be
+            collected.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-foreground">
             Data We Collect
           </h2>
           <p className="mt-2">
-            When you export an image, we collect anonymous usage metadata to
-            improve the service. This includes:
+            If you accept cookies, when you export an image we collect anonymous
+            usage metadata to improve the service. This includes:
           </p>
           <ul className="mt-2 list-inside list-disc space-y-1">
             <li>Image dimensions (width and height)</li>
@@ -56,11 +82,14 @@ export default function PrivacyPage() {
               A random session identifier (generated locally, not tied to your
               identity)
             </li>
+            <li>IP address (for geographic analytics only)</li>
+            <li>Browser user agent string</li>
+            <li>Country (derived from IP via hosting provider)</li>
           </ul>
           <p className="mt-2">
-            We do not collect your name, email address, IP address, or any
-            personally identifiable information. We do not use cookies for
-            tracking.
+            We do not collect your name, email address, or any account-based
+            personally identifiable information. If you decline cookies, none of
+            the above data is collected.
           </p>
         </section>
 
@@ -93,9 +122,11 @@ export default function PrivacyPage() {
             Data Retention
           </h2>
           <p className="mt-2">
-            Anonymous usage metadata is retained indefinitely to help us
-            understand how the tool is used and to improve it. Since no personal
-            data is collected, there is no personal data to delete.
+            Usage metadata is retained indefinitely to help us understand how
+            the tool is used and to improve it. IP addresses are stored for
+            geographic analytics and may be periodically anonymized or deleted.
+            If you wish to request deletion of your data, contact us at the
+            email below.
           </p>
         </section>
 
