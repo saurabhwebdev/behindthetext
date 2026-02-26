@@ -129,6 +129,28 @@
   }
 }
 
+/* BTT logo color pulse animation */
+.btt-logo {
+  animation: btt-pulse 3s ease-in-out infinite;
+}
+
+:root .btt-logo {
+  --btt-base: #0a0a0a;
+}
+
+.dark .btt-logo {
+  --btt-base: #fafafa;
+}
+
+@keyframes btt-pulse {
+  0%, 100% {
+    color: var(--btt-base);
+  }
+  50% {
+    color: #ff3131;
+  }
+}
+
 /* View Transition API — theme toggle animation */
 ::view-transition-old(root),
 ::view-transition-new(root) {
