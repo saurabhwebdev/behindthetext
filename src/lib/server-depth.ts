@@ -1,6 +1,9 @@
 /**
- * Server-side depth estimation using @huggingface/transformers with WASM/CPU backend.
- * Runs the same Depth Anything V2 Small model as the client but without WebGPU.
+ * Server-side depth estimation using @huggingface/transformers.
+ * Uses onnxruntime-node (CPU) for ONNX inference on the server.
+ *
+ * Requires onnxruntime-node in serverExternalPackages so Next.js
+ * includes the native .so/.dll files in the deployment.
  */
 
 import { pipeline, RawImage, env } from "@huggingface/transformers";
@@ -21,7 +24,7 @@ async function getDepthPipeline() {
     {
       device: "cpu",
       session_options: {
-        logSeverityLevel: 3, // Only log errors
+        logSeverityLevel: 3,
       },
     }
   );
