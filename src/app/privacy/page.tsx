@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="font-[family-name:var(--font-extenda-light)] text-4xl tracking-tight">Privacy Policy</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+    <div className="mx-auto max-w-3xl px-6 py-16">
+      <h1 className="font-[family-name:var(--font-extenda-light)] text-5xl sm:text-6xl tracking-tight">Privacy Policy</h1>
+      <p className="mt-4 text-sm text-muted-foreground">
         Last updated: February 26, 2026
       </p>
 
-      <div className="mt-8 space-y-8 text-[15px] leading-relaxed text-muted-foreground">
+      <div className="mt-12 space-y-8 text-[15px] leading-relaxed text-muted-foreground">
         <section>
           <h2 className="text-lg font-semibold text-foreground">Overview</h2>
           <p className="mt-2">
