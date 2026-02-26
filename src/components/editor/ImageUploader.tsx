@@ -2,7 +2,12 @@
 
 import { useCallback, useRef, useState } from "react";
 import { ImagePlus } from "lucide-react";
-import { ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_FILE_SIZE_BYTES,
+  MAX_FILE_SIZE_MB,
+} from "@/lib/constants";
 
 interface ImageUploaderProps {
   onImageSelected: (file: File) => void;
@@ -58,23 +63,29 @@ export function ImageUploader({ onImageSelected, disabled }: ImageUploaderProps)
 
   return (
     <div
-      onClick={disabled ? undefined : handleClick}
       onDrop={disabled ? undefined : handleDrop}
       onDragOver={disabled ? undefined : handleDragOver}
       onDragLeave={handleDragLeave}
-      className={`flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-12 transition-colors ${
-        isDragging
-          ? "border-primary bg-primary/5"
-          : "border-muted-foreground/25 hover:border-muted-foreground/50"
-      } ${disabled ? "pointer-events-none opacity-50" : "cursor-pointer"}`}
+      className={`upload-border-glow flex flex-col items-center justify-center gap-5 p-12 lg:p-16 transition-all ${
+        isDragging ? "dragging" : ""
+      } ${disabled ? "pointer-events-none opacity-50" : ""}`}
     >
-      <ImagePlus className="h-12 w-12 text-muted-foreground" />
+      <ImagePlus className="h-14 w-14 text-muted-foreground/60 lg:h-16 lg:w-16" />
       <div className="text-center">
-        <p className="text-lg font-medium">Drop an image here or click to browse</p>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="font-[family-name:var(--font-extenda-light)] text-xl tracking-tight lg:text-2xl">
+          Drop your image here
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
           JPEG, PNG, or WebP &middot; Max {MAX_FILE_SIZE_MB}MB
         </p>
       </div>
+      <Button
+        variant="outline"
+        onClick={disabled ? undefined : handleClick}
+        className="h-10 px-6"
+      >
+        Browse Files
+      </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <input
         ref={inputRef}

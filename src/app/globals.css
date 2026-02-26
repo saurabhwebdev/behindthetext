@@ -151,6 +151,44 @@
   }
 }
 
+/* Animated gradient border for upload zone */
+.upload-border-glow {
+  background: linear-gradient(var(--background), var(--background)) padding-box,
+              linear-gradient(135deg, oklch(0.708 0 0), transparent 40%, oklch(0.708 0 0)) border-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius-xl);
+  transition: all 0.4s ease;
+}
+.upload-border-glow:hover,
+.upload-border-glow.dragging {
+  background: linear-gradient(var(--background), var(--background)) padding-box,
+              linear-gradient(135deg, #ff3131, transparent 40%, var(--primary)) border-box;
+}
+
+/* Floating panel slide animations */
+.panel-enter {
+  animation: panel-slide-in 0.25s ease-out;
+}
+@keyframes panel-slide-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Custom scrollbar for controls panel */
+.controls-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.controls-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.controls-scroll::-webkit-scrollbar-thumb {
+  background: oklch(0.708 0 0 / 30%);
+  border-radius: 2px;
+}
+.controls-scroll::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.708 0 0 / 50%);
+}
+
 /* View Transition API — theme toggle animation */
 ::view-transition-old(root),
 ::view-transition-new(root) {

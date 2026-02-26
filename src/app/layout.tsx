@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { CookieConsent } from "@/components/cookie-consent";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -130,12 +131,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${extendaBold.variable} ${extendaLight.variable} antialiased`}
       >
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex flex-1 flex-col">{children}</main>
-            <Footer />
-          </div>
-          <CookieConsent />
+          <TooltipProvider>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex flex-1 flex-col">{children}</main>
+              <Footer />
+            </div>
+            <CookieConsent />
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

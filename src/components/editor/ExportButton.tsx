@@ -4,6 +4,11 @@ import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -16,6 +21,7 @@ interface ExportButtonProps {
   disabled?: boolean;
   isExporting: boolean;
   previewCanvas: HTMLCanvasElement | null;
+  compact?: boolean;
 }
 
 export function ExportButton({
@@ -23,6 +29,7 @@ export function ExportButton({
   disabled,
   isExporting,
   previewCanvas,
+  compact,
 }: ExportButtonProps) {
   const [open, setOpen] = useState(false);
   const [exportType, setExportType] = useState<"watermark" | "clean" | null>(null);
@@ -43,23 +50,38 @@ export function ExportButton({
 
   return (
     <>
-      <Button
-        onClick={() => setOpen(true)}
-        disabled={disabled || isExporting}
-        className="h-12 w-full text-base"
-        size="lg"
-      >
-        <Download className="h-4 w-4" />
-        Download PNG
-      </Button>
+      {compact ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setOpen(true)}
+              disabled={disabled || isExporting}
+              className="rounded-full"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Download PNG</TooltipContent>
+        </Tooltip>
+      ) : (
+        <Button
+          onClick={() => setOpen(true)}
+          disabled={disabled || isExporting}
+          className="h-12 w-full text-base"
+          size="lg"
+        >
+          <Download className="h-4 w-4" />
+          Download PNG
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl">Download Image</DialogTitle>
-            <DialogDescription>
-              Choose your download option
-            </DialogDescription>
+            <DialogDescription>Choose your download option</DialogDescription>
           </DialogHeader>
 
           {thumbnailUrl && (

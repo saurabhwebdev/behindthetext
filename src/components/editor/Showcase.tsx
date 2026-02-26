@@ -17,7 +17,11 @@ const SHOWCASE_IMAGES: ShowcaseItem[] = [
   { src: "/showcase/7.webp", alt: "CITY text behind Toronto skyline with CN Tower at sunset" },
 ];
 
-export function Showcase() {
+interface ShowcaseProps {
+  onImageClick?: (src: string) => void;
+}
+
+export function Showcase({ onImageClick }: ShowcaseProps) {
   if (SHOWCASE_IMAGES.length === 0) return null;
 
   return (
@@ -33,7 +37,12 @@ export function Showcase() {
           {SHOWCASE_IMAGES.map((item, i) => (
             <div
               key={i}
-              className="overflow-hidden rounded-lg border border-border/40"
+              className={`overflow-hidden rounded-lg border border-border/40 ${
+                onImageClick
+                  ? "cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md"
+                  : ""
+              }`}
+              onClick={onImageClick ? () => onImageClick(item.src) : undefined}
             >
               <Image
                 src={item.src}
