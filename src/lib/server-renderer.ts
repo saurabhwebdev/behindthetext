@@ -486,11 +486,6 @@ export async function generateImage(
 
   // 7. Create foreground overlay: original image masked by depth
   //    Where depth mask alpha > 0, show original (covers text)
-  const depthMaskSharp = sharp(depthMaskBuf, {
-    raw: { width, height, channels: 4 },
-  })
-    .png()
-    .toBuffer();
 
   // Extract just the alpha channel from depth mask for masking
   const maskAlpha = Buffer.alloc(width * height);

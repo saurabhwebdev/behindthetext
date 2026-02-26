@@ -1,36 +1,16 @@
 /**
- * Server-side depth estimation using @huggingface/transformers.
- * Uses onnxruntime-node (CPU) for ONNX inference on the server.
+ * Server-side depth estimation using HuggingFace Inference API (free tier).
  *
- * Requires onnxruntime-node in serverExternalPackages so Next.js
- * includes the native .so/.dll files in the deployment.
+ * Sends the image to HuggingFace's hosted Depth Anything V2 model and
+ * receives a grayscale depth map image back. No native binaries needed.
+ *
+ * Requires HF_TOKEN env var (free from https://huggingface.co/settings/tokens).
  */
 
-import { pipeline, RawImage, env } from "@huggingface/transformers";
 import sharp from "sharp";
 
-// Disable local model loading — always fetch from HuggingFace Hub
-env.allowLocalModels = false;
-
-// Singleton pipeline — cached after first load (~30-60s cold start)
-let depthPipeline: any = null;
-
-async function getDepthPipeline() {
-  if (depthPipeline) return depthPipeline;
-
-  depthPipeline = await pipeline(
-    "depth-estimation",
-    "onnx-community/depth-anything-v2-small",
-    {
-      device: "cpu",
-      session_options: {
-        logSeverityLevel: 3,
-      },
-    }
-  );
-
-  return depthPipeline;
-}
+const HF_MODEL = "depth-anything/Depth-Anything-V2-Small-hf";
+const HF_ENDPOINT = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}`;
 
 export interface DepthResult {
   depthMap: Float32Array;
@@ -39,46 +19,50 @@ export interface DepthResult {
 }
 
 /**
- * Estimate depth from an image buffer.
+ * Estimate depth from an image buffer using HuggingFace Inference API.
  * Returns a normalized Float32Array (0-1 range) where higher = closer to camera.
  */
 export async function estimateDepthFromBuffer(
   imageBuffer: Buffer
 ): Promise<DepthResult> {
-  const pipe = await getDepthPipeline();
+  const token = process.env.HF_TOKEN;
+  if (!token) {
+    throw new Error(
+      "HF_TOKEN is required. Get a free token at https://huggingface.co/settings/tokens"
+    );
+  }
 
-  // Decode image to raw RGB pixels using Sharp, then create RawImage
-  const { data: rawPixels, info } = await sharp(imageBuffer)
-    .removeAlpha()
+  // Send image to HF Inference API
+  const res = await fetch(HF_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/octet-stream",
+    },
+    body: new Uint8Array(imageBuffer),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(`HuggingFace API error ${res.status}: ${errText}`);
+  }
+
+  // Response is a grayscale depth image (PNG/JPEG)
+  const depthImageBuffer = Buffer.from(await res.arrayBuffer());
+
+  // Decode depth image to raw pixels using Sharp
+  const { data: rawPixels, info } = await sharp(depthImageBuffer)
+    .grayscale()
     .raw()
     .toBuffer({ resolveWithObject: true });
 
-  const image = new RawImage(
-    new Uint8ClampedArray(rawPixels.buffer, rawPixels.byteOffset, rawPixels.byteLength),
-    info.width,
-    info.height,
-    info.channels
-  );
+  const w = info.width;
+  const h = info.height;
 
-  const result = await pipe(image);
-
-  const depthImage = result.depth;
-  const w = depthImage.width;
-  const h = depthImage.height;
-  const rawData = depthImage.data;
-
-  // Normalize to 0-1 range
-  let minVal = Infinity;
-  let maxVal = -Infinity;
-  for (let i = 0; i < rawData.length; i++) {
-    if (rawData[i] < minVal) minVal = rawData[i];
-    if (rawData[i] > maxVal) maxVal = rawData[i];
-  }
-
-  const range = maxVal - minVal || 1;
-  const normalized = new Float32Array(rawData.length);
-  for (let i = 0; i < rawData.length; i++) {
-    normalized[i] = (rawData[i] - minVal) / range;
+  // Convert to normalized Float32Array (0-1 range)
+  const normalized = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    normalized[i] = rawPixels[i] / 255;
   }
 
   return { depthMap: normalized, width: w, height: h };

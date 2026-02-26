@@ -9,7 +9,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node", "sharp"],
+  serverExternalPackages: ["@huggingface/transformers", "sharp"],
   turbopack: {},
   async headers() {
     return [
