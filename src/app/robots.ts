@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: ["/bulk", "/api/"],
       },
     ],
     sitemap: "https://behindthetext.site/sitemap.xml",
