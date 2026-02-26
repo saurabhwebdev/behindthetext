@@ -67,7 +67,11 @@ export async function POST(req: NextRequest) {
 
     // Fetch the image from URL
     const imageRes = await fetch(data.imageUrl, {
-      headers: { "User-Agent": "BehindTheText/1.0" },
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; BehindTheText/1.0)",
+        "Accept": "image/*,*/*",
+      },
+      redirect: "follow",
     });
 
     if (!imageRes.ok) {
@@ -77,19 +81,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const contentType = imageRes.headers.get("content-type") || "";
-    if (
-      !contentType.includes("image/jpeg") &&
-      !contentType.includes("image/png") &&
-      !contentType.includes("image/webp")
-    ) {
+    const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
+
+    // Validate it's actually an image by checking with Sharp
+    try {
+      const meta = await (await import("sharp")).default(imageBuffer).metadata();
+      if (!meta.format || !["jpeg", "png", "webp", "jpg"].includes(meta.format)) {
+        return NextResponse.json(
+          { error: `Unsupported image format: ${meta.format}. Use JPEG, PNG, or WebP.` },
+          { status: 400 }
+        );
+      }
+    } catch {
       return NextResponse.json(
-        { error: `Unsupported image type: ${contentType}. Use JPEG, PNG, or WebP.` },
+        { error: "Could not decode image. Make sure the URL points to a valid JPEG, PNG, or WebP." },
         { status: 400 }
       );
     }
-
-    const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
 
     // Merge provided params with defaults
     const textParams: TextOverlayParams = {

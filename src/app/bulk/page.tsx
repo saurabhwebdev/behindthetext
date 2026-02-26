@@ -78,8 +78,14 @@ export default function BulkPage() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || `HTTP ${res.status}`);
+        let msg = `HTTP ${res.status}`;
+        try {
+          const err = await res.json();
+          msg = err.error || msg;
+        } catch {
+          msg = await res.text().catch(() => msg);
+        }
+        throw new Error(msg);
       }
 
       const blob = await res.blob();
