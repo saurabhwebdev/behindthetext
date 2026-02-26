@@ -175,6 +175,22 @@
   background: oklch(0.708 0 0 / 50%);
 }
 
+/* Showcase ticker — infinite horizontal scroll */
+.showcase-scroll-left {
+  animation: showcase-scroll-left linear infinite;
+}
+.showcase-scroll-right {
+  animation: showcase-scroll-right linear infinite;
+}
+@keyframes showcase-scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes showcase-scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
 /* View Transition API — theme toggle animation */
 ::view-transition-old(root),
 ::view-transition-new(root) {

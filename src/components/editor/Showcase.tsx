@@ -21,24 +21,62 @@ const SHOWCASE_IMAGES: ShowcaseItem[] = [
   { src: "/showcase/11.webp", alt: "PARTY text behind group of surfers carrying boards on a sandy beach" },
 ];
 
-export function Showcase() {
-  if (SHOWCASE_IMAGES.length === 0) return null;
+// Split into two rows for opposing scroll directions
+const ROW_1 = SHOWCASE_IMAGES.slice(0, 6);
+const ROW_2 = SHOWCASE_IMAGES.slice(6).concat(SHOWCASE_IMAGES.slice(0, 2));
+
+function TickerRow({
+  images,
+  direction,
+  duration,
+}: {
+  images: ShowcaseItem[];
+  direction: "left" | "right";
+  duration: string;
+}) {
+  // Duplicate the set for seamless loop
+  const items = [...images, ...images];
 
   return (
-    <section className="w-full">
-      <div className="grid grid-cols-2 gap-0.5 sm:grid-cols-3 lg:grid-cols-4">
-        {SHOWCASE_IMAGES.map((item, i) => (
-          <div key={i} className="overflow-hidden">
+    <div className="showcase-ticker group relative overflow-hidden">
+      {/* Fade edges */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background to-transparent" />
+
+      <div
+        className={`flex w-max gap-3 ${
+          direction === "left" ? "showcase-scroll-left" : "showcase-scroll-right"
+        } group-hover:[animation-play-state:paused]`}
+        style={{ animationDuration: duration }}
+      >
+        {items.map((item, i) => (
+          <div
+            key={`${item.src}-${i}`}
+            className="w-64 shrink-0 overflow-hidden rounded-xl sm:w-72 lg:w-80"
+          >
             <Image
               src={item.src}
               alt={item.alt}
               width={800}
               height={533}
-              className="h-auto w-full object-cover transition-transform duration-500 hover:scale-105"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="h-auto w-full object-cover"
+              sizes="320px"
             />
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+export function Showcase() {
+  if (SHOWCASE_IMAGES.length === 0) return null;
+
+  return (
+    <section className="w-full overflow-hidden py-8">
+      <div className="space-y-3">
+        <TickerRow images={ROW_1} direction="left" duration="40s" />
+        <TickerRow images={ROW_2} direction="right" duration="35s" />
       </div>
     </section>
   );
