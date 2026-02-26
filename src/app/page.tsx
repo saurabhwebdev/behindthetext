@@ -1,5 +1,4 @@
 import { EditorLayout } from "@/components/editor/EditorLayout";
-import { Showcase } from "@/components/editor/Showcase";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -43,7 +42,6 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <EditorLayout />
-      <Showcase />
     </>
   );
 }

@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { CanvasPreview } from "./CanvasPreview";
 import { EmptyState } from "./EmptyState";
+import { Showcase } from "./Showcase";
 import { FloatingActionBar } from "./FloatingActionBar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -154,15 +155,19 @@ export function EditorLayout() {
     </Tabs>
   );
 
-  // Empty state
+  // Empty state — show landing + showcase
   if (!hasImage) {
     return (
-      <EmptyState onImageSelected={onImageSelected} />
+      <>
+        <EmptyState onImageSelected={onImageSelected} />
+        <Showcase />
+      </>
     );
   }
 
+  // Editor active — full viewport, no showcase
   return (
-    <div className="relative flex flex-1 overflow-hidden">
+    <div className="relative flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Canvas — fills entire area */}
       <div className="flex-1">
         <CanvasPreview
