@@ -1,12 +1,21 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const alt =
   "BehindTheText — Place text behind any image with AI depth estimation";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function TwitterImage() {
+  const extendaBold = await readFile(
+    join(process.cwd(), "public/fonts/Extenda-80-Peta-trial.ttf")
+  );
+  const extendaLight = await readFile(
+    join(process.cwd(), "public/fonts/Extenda-40-Hecto-trial.ttf")
+  );
+
   return new ImageResponse(
     (
       <div
@@ -17,8 +26,9 @@ export default async function TwitterImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)",
-          fontFamily: "system-ui, sans-serif",
+          background:
+            "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)",
+          fontFamily: "Extenda Light, system-ui, sans-serif",
           position: "relative",
           overflow: "hidden",
         }}
@@ -35,11 +45,11 @@ export default async function TwitterImage() {
         <div
           style={{
             position: "absolute",
-            width: 500,
-            height: 500,
+            width: 600,
+            height: 600,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(255,49,49,0.12) 0%, transparent 70%)",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -50,66 +60,91 @@ export default async function TwitterImage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 16,
+            gap: 0,
             position: "relative",
           }}
         >
           <div
             style={{
-              fontSize: 72,
-              fontWeight: 800,
-              color: "#ffffff",
-              letterSpacing: "-2px",
+              fontFamily: "Extenda Bold",
+              fontSize: 140,
+              color: "#ff3131",
+              letterSpacing: "8px",
               lineHeight: 1,
             }}
           >
-            BehindTheText
+            BTT
           </div>
           <div
             style={{
-              fontSize: 28,
-              fontWeight: 400,
-              color: "rgba(255,255,255,0.6)",
+              fontFamily: "Extenda Light",
+              fontSize: 36,
+              color: "rgba(255,255,255,0.85)",
+              letterSpacing: "6px",
+              marginTop: 12,
+            }}
+          >
+            BEHINDTHETEXT
+          </div>
+          <div
+            style={{
+              fontSize: 22,
+              color: "rgba(255,255,255,0.5)",
               letterSpacing: "0.5px",
-              marginTop: 8,
+              marginTop: 20,
+              fontFamily: "system-ui, sans-serif",
             }}
           >
             Place text behind any image — powered by AI
           </div>
-          <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
-            {["Free", "No Signup", "100% In-Browser", "AI Depth"].map(
-              (label) => (
-                <div
-                  key={label}
-                  style={{
-                    padding: "8px 20px",
-                    borderRadius: 999,
-                    background: "rgba(255,255,255,0.08)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.7)",
-                    fontSize: 16,
-                    fontWeight: 500,
-                  }}
-                >
-                  {label}
-                </div>
-              )
-            )}
+          <div style={{ display: "flex", gap: 12, marginTop: 36 }}>
+            {["Free", "No Signup", "In-Browser", "AI Depth"].map((label) => (
+              <div
+                key={label}
+                style={{
+                  padding: "8px 20px",
+                  borderRadius: 999,
+                  background: "rgba(255,49,49,0.1)",
+                  border: "1px solid rgba(255,49,49,0.2)",
+                  color: "rgba(255,255,255,0.7)",
+                  fontSize: 15,
+                  fontFamily: "system-ui, sans-serif",
+                }}
+              >
+                {label}
+              </div>
+            ))}
           </div>
         </div>
         <div
           style={{
             position: "absolute",
             bottom: 32,
-            fontSize: 18,
-            color: "rgba(255,255,255,0.35)",
-            fontWeight: 500,
+            fontSize: 16,
+            color: "rgba(255,255,255,0.3)",
+            fontFamily: "system-ui, sans-serif",
           }}
         >
           behindthetext.site
         </div>
       </div>
     ),
-    { ...size }
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Extenda Bold",
+          data: extendaBold,
+          style: "normal",
+          weight: 400,
+        },
+        {
+          name: "Extenda Light",
+          data: extendaLight,
+          style: "normal",
+          weight: 400,
+        },
+      ],
+    }
   );
 }

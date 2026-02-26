@@ -2,13 +2,19 @@
 
 import Image from "next/image";
 
-export interface ShowcaseItem {
+interface ShowcaseItem {
   src: string;
   alt: string;
 }
 
 const SHOWCASE_IMAGES: ShowcaseItem[] = [
-  // Add images here: { src: "/showcase/1.png", alt: "Text behind mountains" }
+  { src: "/showcase/1.webp", alt: "CITY text behind New York skyline and Brooklyn Bridge" },
+  { src: "/showcase/2.webp", alt: "JUMP text behind person leaping over fence with blue sky" },
+  { src: "/showcase/3.webp", alt: "JUMP text in red behind person mid-air over fence" },
+  { src: "/showcase/4.webp", alt: "MOUNTAIN text behind snowy Alps with red funicular train" },
+  { src: "/showcase/5.webp", alt: "Hieee text behind zebra standing by a tree in African savanna" },
+  { src: "/showcase/6.webp", alt: "Hello text behind zebra and tree in green grassland" },
+  { src: "/showcase/7.webp", alt: "CITY text behind Toronto skyline with CN Tower at sunset" },
 ];
 
 export function Showcase() {
@@ -32,8 +38,8 @@ export function Showcase() {
               <Image
                 src={item.src}
                 alt={item.alt}
-                width={400}
-                height={400}
+                width={800}
+                height={533}
                 className="h-auto w-full object-cover"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
