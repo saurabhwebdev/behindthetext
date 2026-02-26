@@ -151,20 +151,6 @@
   }
 }
 
-/* Animated gradient border for upload zone */
-.upload-border-glow {
-  background: linear-gradient(var(--background), var(--background)) padding-box,
-              linear-gradient(135deg, oklch(0.708 0 0), transparent 40%, oklch(0.708 0 0)) border-box;
-  border: 2px solid transparent;
-  border-radius: var(--radius-xl);
-  transition: all 0.4s ease;
-}
-.upload-border-glow:hover,
-.upload-border-glow.dragging {
-  background: linear-gradient(var(--background), var(--background)) padding-box,
-              linear-gradient(135deg, #ff3131, transparent 40%, var(--primary)) border-box;
-}
-
 /* Floating panel slide animations */
 .panel-enter {
   animation: panel-slide-in 0.25s ease-out;

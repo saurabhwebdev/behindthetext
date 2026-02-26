@@ -15,46 +15,30 @@ const SHOWCASE_IMAGES: ShowcaseItem[] = [
   { src: "/showcase/5.webp", alt: "Hieee text behind zebra standing by a tree in African savanna" },
   { src: "/showcase/6.webp", alt: "Hello text behind zebra and tree in green grassland" },
   { src: "/showcase/7.webp", alt: "CITY text behind Toronto skyline with CN Tower at sunset" },
+  { src: "/showcase/8.webp", alt: "SURFER text behind man surfing a wave with his dog" },
+  { src: "/showcase/9.webp", alt: "SUNDOWN text behind pink sunset over calm ocean waves" },
+  { src: "/showcase/10.webp", alt: "CALM! text behind aerial view of surfers riding ocean waves at sunset" },
+  { src: "/showcase/11.webp", alt: "PARTY text behind group of surfers carrying boards on a sandy beach" },
 ];
 
-interface ShowcaseProps {
-  onImageClick?: (src: string) => void;
-}
-
-export function Showcase({ onImageClick }: ShowcaseProps) {
+export function Showcase() {
   if (SHOWCASE_IMAGES.length === 0) return null;
 
   return (
-    <section className="w-full border-t border-border/40 bg-muted/30">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <h2 className="btt-pulse text-center font-[family-name:var(--font-extenda-light)] text-3xl tracking-tight">
-          Showcase
-        </h2>
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          Made with BehindTheText
-        </p>
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {SHOWCASE_IMAGES.map((item, i) => (
-            <div
-              key={i}
-              className={`overflow-hidden rounded-lg border border-border/40 ${
-                onImageClick
-                  ? "cursor-pointer transition-all hover:border-foreground/20 hover:shadow-md"
-                  : ""
-              }`}
-              onClick={onImageClick ? () => onImageClick(item.src) : undefined}
-            >
-              <Image
-                src={item.src}
-                alt={item.alt}
-                width={800}
-                height={533}
-                className="h-auto w-full object-cover"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              />
-            </div>
-          ))}
-        </div>
+    <section className="w-full">
+      <div className="grid grid-cols-2 gap-0.5 sm:grid-cols-3 lg:grid-cols-4">
+        {SHOWCASE_IMAGES.map((item, i) => (
+          <div key={i} className="overflow-hidden">
+            <Image
+              src={item.src}
+              alt={item.alt}
+              width={800}
+              height={533}
+              className="h-auto w-full object-cover transition-transform duration-500 hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            />
+          </div>
+        ))}
       </div>
     </section>
   );

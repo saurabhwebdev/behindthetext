@@ -63,14 +63,19 @@ export function ImageUploader({ onImageSelected, disabled }: ImageUploaderProps)
 
   return (
     <div
+      onClick={disabled ? undefined : handleClick}
       onDrop={disabled ? undefined : handleDrop}
       onDragOver={disabled ? undefined : handleDragOver}
       onDragLeave={handleDragLeave}
-      className={`upload-border-glow flex flex-col items-center justify-center gap-5 p-12 lg:p-16 transition-all ${
-        isDragging ? "dragging" : ""
+      className={`flex cursor-pointer flex-col items-center justify-center gap-5 rounded-2xl border-2 border-dashed p-12 transition-all duration-300 lg:p-16 ${
+        isDragging
+          ? "border-[#ff3131] bg-[#ff3131]/5"
+          : "border-muted-foreground/20 hover:border-[#ff3131]/50 hover:bg-muted/30"
       } ${disabled ? "pointer-events-none opacity-50" : ""}`}
     >
-      <ImagePlus className="h-14 w-14 text-muted-foreground/60 lg:h-16 lg:w-16" />
+      <ImagePlus className={`h-14 w-14 transition-colors duration-300 lg:h-16 lg:w-16 ${
+        isDragging ? "text-[#ff3131]" : "text-muted-foreground/40"
+      }`} />
       <div className="text-center">
         <p className="font-[family-name:var(--font-extenda-light)] text-xl tracking-tight lg:text-2xl">
           Drop your image here
@@ -81,8 +86,11 @@ export function ImageUploader({ onImageSelected, disabled }: ImageUploaderProps)
       </div>
       <Button
         variant="outline"
-        onClick={disabled ? undefined : handleClick}
         className="h-10 px-6"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClick();
+        }}
       >
         Browse Files
       </Button>

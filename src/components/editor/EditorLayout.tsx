@@ -87,30 +87,6 @@ export function EditorLayout() {
     [originalImageUrl, estimateDepth]
   );
 
-  // Handle loading example images
-  const onExampleClick = useCallback(
-    async (src: string) => {
-      try {
-        const res = await fetch(src);
-        const blob = await res.blob();
-        const ext = src.split(".").pop() || "webp";
-        const mimeMap: Record<string, string> = {
-          webp: "image/webp",
-          jpg: "image/jpeg",
-          jpeg: "image/jpeg",
-          png: "image/png",
-        };
-        const file = new File([blob], `example.${ext}`, {
-          type: mimeMap[ext] || "image/webp",
-        });
-        onImageSelected(file);
-      } catch {
-        // silently fail
-      }
-    },
-    [onImageSelected]
-  );
-
   // Handle new image
   const onNewImage = useCallback(() => {
     if (originalImageUrl) URL.revokeObjectURL(originalImageUrl);
@@ -154,14 +130,14 @@ export function EditorLayout() {
 
   // Shared tabbed controls content
   const controlsTabs = (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col overflow-hidden">
-      <TabsList className="mx-0 grid w-full grid-cols-4">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full flex-col">
+      <TabsList className="mx-0 grid w-full shrink-0 grid-cols-4">
         <TabsTrigger value="type" className="text-xs">Type</TabsTrigger>
         <TabsTrigger value="style" className="text-xs">Style</TabsTrigger>
         <TabsTrigger value="place" className="text-xs">Place</TabsTrigger>
         <TabsTrigger value="fx" className="text-xs">FX</TabsTrigger>
       </TabsList>
-      <div className="controls-scroll flex-1 overflow-y-auto py-3">
+      <div className="controls-scroll min-h-0 flex-1 overflow-y-auto py-3">
         <TabsContent value="type" className="mt-0">
           <TypographyControls textParams={textParams} setField={setField} />
         </TabsContent>
@@ -181,10 +157,7 @@ export function EditorLayout() {
   // Empty state
   if (!hasImage) {
     return (
-      <EmptyState
-        onImageSelected={onImageSelected}
-        onExampleClick={onExampleClick}
-      />
+      <EmptyState onImageSelected={onImageSelected} />
     );
   }
 
@@ -204,9 +177,9 @@ export function EditorLayout() {
       {/* Desktop: floating controls panel */}
       <div className="hidden lg:block">
         {controlsOpen ? (
-          <div className="panel-enter absolute bottom-4 right-4 top-4 z-20 flex w-80 flex-col overflow-hidden rounded-2xl border border-border/40 bg-background/80 shadow-2xl backdrop-blur-xl">
+          <div className="panel-enter absolute bottom-4 right-4 top-4 z-20 flex w-96 flex-col overflow-hidden rounded-2xl border border-border/40 bg-background/80 shadow-2xl backdrop-blur-xl">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border/40 px-4 py-2.5">
+            <div className="flex shrink-0 items-center justify-between border-b border-border/40 px-4 py-2.5">
               <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Controls
               </span>
@@ -221,7 +194,7 @@ export function EditorLayout() {
             </div>
 
             {/* Text input — pinned */}
-            <div className="border-b border-border/40 px-4 py-2.5">
+            <div className="shrink-0 border-b border-border/40 px-4 py-2.5">
               <Input
                 value={textParams.text}
                 onChange={(e) => setField("text", e.target.value)}
@@ -230,8 +203,8 @@ export function EditorLayout() {
               />
             </div>
 
-            {/* Tabbed controls */}
-            <div className="flex flex-1 flex-col overflow-hidden px-4">
+            {/* Tabbed controls — scrollable area */}
+            <div className="min-h-0 flex-1 px-4 pt-2 pb-3">
               {controlsTabs}
             </div>
           </div>
@@ -278,7 +251,7 @@ export function EditorLayout() {
           </div>
 
           <DrawerContent className="max-h-[70vh]">
-            <div className="flex flex-1 flex-col overflow-hidden px-4 pb-4">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4">
               {controlsTabs}
             </div>
           </DrawerContent>
