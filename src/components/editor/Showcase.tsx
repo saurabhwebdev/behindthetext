@@ -17,7 +17,7 @@ export function Showcase() {
   return (
     <section className="w-full border-t border-border/40 bg-muted/30">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <h2 className="text-center font-[family-name:var(--font-extenda-light)] text-3xl tracking-tight">
+        <h2 className="btt-pulse text-center font-[family-name:var(--font-extenda-light)] text-3xl tracking-tight">
           Showcase
         </h2>
         <p className="mt-2 text-center text-sm text-muted-foreground">

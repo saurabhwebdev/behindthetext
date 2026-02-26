@@ -129,16 +129,16 @@
   }
 }
 
-/* BTT logo color pulse animation */
-.btt-logo {
+/* BTT color pulse animation — logo & page headings */
+.btt-pulse {
   animation: btt-pulse 3s ease-in-out infinite;
 }
 
-:root .btt-logo {
+:root .btt-pulse {
   --btt-base: #0a0a0a;
 }
 
-.dark .btt-logo {
+.dark .btt-pulse {
   --btt-base: #fafafa;
 }
 

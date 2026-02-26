@@ -10,7 +10,7 @@ export default function NotFound() {
       <div className="w-full max-w-sm">
         <Lottie animationData={animationData} loop autoplay />
       </div>
-      <h1 className="font-[family-name:var(--font-extenda-bold)] text-5xl tracking-tight">
+      <h1 className="btt-pulse font-[family-name:var(--font-extenda-bold)] text-5xl tracking-tight">
         Page Not Found
       </h1>
       <p className="mt-1 text-base text-muted-foreground">
