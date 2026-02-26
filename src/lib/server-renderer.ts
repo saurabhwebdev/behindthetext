@@ -341,67 +341,68 @@ function generateTextSVG(
   let fillAttr: string;
   let defsContent = "";
   if (params.useGradient) {
-    defsContent = `
-      <linearGradient id="textGrad" x1="0%" y1="50%" x2="100%" y2="50%">
-        <stop offset="0%" stop-color="${escapeXml(params.gradientStartColor)}" />
-        <stop offset="100%" stop-color="${escapeXml(params.gradientEndColor)}" />
-      </linearGradient>`;
+    defsContent =
+      `<linearGradient id="textGrad" x1="0%" y1="50%" x2="100%" y2="50%">` +
+      `<stop offset="0%" stop-color="${escapeXml(params.gradientStartColor)}"></stop>` +
+      `<stop offset="100%" stop-color="${escapeXml(params.gradientEndColor)}"></stop>` +
+      `</linearGradient>`;
     fillAttr = "url(#textGrad)";
   } else {
     fillAttr = escapeXml(params.color);
   }
 
-  // Build text style
-  const fontStyle = `
-    font-family: "${escapeXml(params.fontFamily)}", Impact, sans-serif;
-    font-size: ${scaledFontSize}px;
-    font-weight: ${params.fontWeight};
-    letter-spacing: ${letterSpacingPx}px;
-    text-anchor: middle;
-    dominant-baseline: central;
-    fill: ${fillAttr};
-    opacity: ${params.opacity};
-  `;
-
   // Build shadow filter
   let filterDef = "";
-  let filterAttr = "";
+  let filterRef = "";
   if (params.shadowEnabled) {
     const sBlur = params.shadowBlur * renderScale;
     const sOx = params.shadowOffsetX * renderScale;
     const sOy = params.shadowOffsetY * renderScale;
-    filterDef = `
-      <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-        <feDropShadow dx="${sOx}" dy="${sOy}" stdDeviation="${sBlur / 2}" flood-color="${escapeXml(params.shadowColor)}" flood-opacity="1" />
-      </filter>`;
-    filterAttr = `filter="url(#shadow)"`;
+    filterDef =
+      `<filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">` +
+      `<feDropShadow dx="${sOx}" dy="${sOy}" stdDeviation="${sBlur / 2}" flood-color="${escapeXml(params.shadowColor)}" flood-opacity="1"></feDropShadow>` +
+      `</filter>`;
+    filterRef = ` filter="url(#shadow)"`;
   }
 
-  // Build stroke
-  let strokeElements = "";
+  // Common text attributes
+  const fontFamily = `${escapeXml(params.fontFamily)}, Impact, sans-serif`;
+  const textAttrs =
+    ` transform="${transformAttr}"` +
+    ` font-family="${fontFamily}"` +
+    ` font-size="${scaledFontSize}"` +
+    ` font-weight="${params.fontWeight}"` +
+    ` letter-spacing="${letterSpacingPx}"` +
+    ` text-anchor="middle"` +
+    ` dominant-baseline="central"` +
+    ` opacity="${params.opacity}"`;
+
+  // Build stroke text element
+  let strokeEl = "";
   if (params.strokeEnabled) {
     const sWidth = params.strokeWidth * renderScale;
-    strokeElements = `
-      <text
-        transform="${transformAttr}"
-        style="${fontStyle}"
-        stroke="${escapeXml(params.strokeColor)}"
-        stroke-width="${sWidth}"
-        stroke-linejoin="round"
-        fill="none"
-        ${filterAttr}
-      >${escapedText}</text>`;
+    strokeEl =
+      `<text${textAttrs}` +
+      ` stroke="${escapeXml(params.strokeColor)}"` +
+      ` stroke-width="${sWidth}"` +
+      ` stroke-linejoin="round"` +
+      ` fill="none"` +
+      `${filterRef}` +
+      `>${escapedText}</text>`;
   }
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <defs>${defsContent}${filterDef}</defs>
-  ${strokeElements}
-  <text
-    transform="${transformAttr}"
-    style="${fontStyle}"
-    ${filterAttr}
-  >${escapedText}</text>
-</svg>`;
+  // Build fill text element
+  const fillEl =
+    `<text${textAttrs}` +
+    ` fill="${fillAttr}"` +
+    `${filterRef}` +
+    `>${escapedText}</text>`;
+
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
+    `<defs>${defsContent}${filterDef}</defs>` +
+    `${strokeEl}${fillEl}` +
+    `</svg>`;
 
   return Buffer.from(svg);
 }
@@ -418,22 +419,15 @@ function generateWatermarkSVG(
   const x = width - padding;
   const y = height - padding;
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <defs>
-    <filter id="wmShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="1" stdDeviation="${fontSize * 0.15}" flood-color="rgba(0,0,0,0.5)" flood-opacity="1" />
-    </filter>
-  </defs>
-  <text
-    x="${x}" y="${y}"
-    style="font-family: Inter, 'Segoe UI', system-ui, sans-serif; font-size: ${fontSize}px; font-weight: 600;"
-    text-anchor="end"
-    dominant-baseline="auto"
-    fill="white"
-    opacity="0.6"
-    filter="url(#wmShadow)"
-  >${escapeXml(siteName)}</text>
-</svg>`;
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
+    `<defs>` +
+    `<filter id="wmShadow" x="-20%" y="-20%" width="140%" height="140%">` +
+    `<feDropShadow dx="0" dy="1" stdDeviation="${fontSize * 0.15}" flood-color="rgba(0,0,0,0.5)" flood-opacity="1"></feDropShadow>` +
+    `</filter>` +
+    `</defs>` +
+    `<text x="${x}" y="${y}" font-family="Inter, sans-serif" font-size="${fontSize}" font-weight="600" text-anchor="end" dominant-baseline="auto" fill="white" opacity="0.6" filter="url(#wmShadow)">${escapeXml(siteName)}</text>` +
+    `</svg>`;
 
   return Buffer.from(svg);
 }
